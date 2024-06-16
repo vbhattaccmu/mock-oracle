@@ -7,6 +7,6 @@ RUN cargo build --release --target aarch64-unknown-linux-musl
 
 FROM --platform=linux/arm64/v8 alpine:latest
 
-COPY --from=build /src/target/aarch64-unknown-linux-musl/release/dev-oracle /usr/bin/
+COPY --from=build /src/target/aarch64-unknown-linux-musl/release/oracle /usr/bin/
 
 ENTRYPOINT [ "dev-oracle" ]
