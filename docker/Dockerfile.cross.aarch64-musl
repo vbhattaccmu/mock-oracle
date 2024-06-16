@@ -1,0 +1,12 @@
+FROM messense/rust-musl-cross:aarch64-musl AS build
+
+WORKDIR /src
+COPY . /src
+
+RUN cargo build --release --target aarch64-unknown-linux-musl
+
+FROM --platform=linux/arm64/v8 alpine:latest
+
+COPY --from=build /src/target/aarch64-unknown-linux-musl/release/dev-oracle /usr/bin/
+
+ENTRYPOINT [ "dev-oracle" ]

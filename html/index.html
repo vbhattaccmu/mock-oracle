@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Dev Oracle</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        background-color: black;
+        color: #dddddd;
+      }
+      #title {
+        display: flex;
+        align-items: center;
+      }
+      #status {
+        margin-left: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="title">
+      <h2>Oracle Prices</h2>
+      <p id="status"></p>
+    </div>
+
+    <input type="button" value="Refresh" onclick="javascript:updatePrices()" />
+
+    <p>Pair:</p>
+    <input id="txtPair" type="text" />
+    <p>Price:</p>
+    <input id="txtPrice" type="text" />
+    <input type="button" value="Submit" onclick="javascript:changePrice()" />
+
+    <div id="price-list"></div>
+
+    <script>
+      async function updatePrices() {
+        document.getElementById("price-list").innerHTML = "";
+        document.getElementById("status").innerHTML = "Loading...";
+
+        const response = await fetch("/api/prices");
+        const body = await response.json();
+
+        let html = "";
+
+        for (const pair of body) {
+          html += `<h3>${pair.id}</h3>\n`;
+          html += "<ul>\n";
+          html += `<li>Decimals: <strong>${pair.decimals}</strong></li>\n`;
+          html += `<li>Current Price: <strong>${pair.current_price}</strong></li>\n`;
+          html += `<li>Next Price: <strong>${
+            pair.next_price ?? pair.current_price
+          }</strong></li>\n`;
+          html += "</ul>\n";
+        }
+
+        document.getElementById("price-list").innerHTML = html;
+        document.getElementById("status").innerHTML = "";
+      }
+
+      async function changePrice() {
+        document.getElementById("status").innerHTML = "Submitting...";
+
+        const pair = document.getElementById("txtPair").value;
+        const price = document.getElementById("txtPrice").value;
+        const requestBody = {
+          pair,
+          price,
+        };
+
+        const response = await fetch("/api/price", {
+          method: "POST",
+          body: JSON.stringify(requestBody),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.status === 200) {
+          document.getElementById("status").innerHTML = "Success";
+        } else if (response.status === 404) {
+          document.getElementById("status").innerHTML = "Error: pair not found";
+        } else {
+          document.getElementById(
+            "status"
+          ).innerHTML = `Error: unexpected status code: ${response.status}`;
+        }
+      }
+
+      updatePrices();
+    </script>
+  </body>
+</html>
